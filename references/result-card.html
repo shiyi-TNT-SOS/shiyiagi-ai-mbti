@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MBTI 人格测试结果</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0e27;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    min-height: 100vh;
+  }
+  .card {
+    width: 600px;
+    background: linear-gradient(135deg, #1a1f4e 0%, #2d1b69 50%, #1a1f4e 100%);
+    border-radius: 24px;
+    padding: 48px 40px;
+    box-shadow: 0 20px 60px rgba(99, 102, 241, 0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.1);
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .badge {
+    display: inline-block;
+    padding: 6px 16px;
+    background: rgba(139, 92, 246, 0.2);
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    border-radius: 20px;
+    color: #c4b5fd;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 24px;
+  }
+  .type-name {
+    font-size: 64px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff 0%, #c4b5fd 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1;
+    margin-bottom: 8px;
+    letter-spacing: -1px;
+  }
+  .type-subtitle {
+    font-size: 20px;
+    color: #a5b4fc;
+    font-weight: 500;
+    margin-bottom: 32px;
+  }
+  .radar-container {
+    width: 100%;
+    height: 280px;
+    margin: 24px 0;
+  }
+  .traits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 24px;
+  }
+  .trait-tag {
+    padding: 8px 16px;
+    background: rgba(99, 102, 241, 0.15);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 12px;
+    color: #e0e7ff;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .dimensions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 28px;
+    padding-top: 28px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .dim-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .dim-label {
+    font-size: 12px;
+    color: #818cf8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .dim-value {
+    font-size: 18px;
+    color: #fff;
+    font-weight: 600;
+  }
+  .dim-strength {
+    font-size: 12px;
+    color: #c4b5fd;
+  }
+  .footer {
+    margin-top: 32px;
+    text-align: center;
+    font-size: 12px;
+    color: rgba(255,255,255,0.3);
+  }
+  .save-btn {
+    margin-top: 24px;
+    padding: 14px 32px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+    transition: transform 0.2s;
+  }
+  .save-btn:hover {
+    transform: translateY(-2px);
+  }
+</style>
+</head>
+<body>
+
+<div class="card" id="resultCard">
+  <div class="badge">AI Agent MBTI 专业测评</div>
+  <div class="type-name" id="typeName">ISTJ</div>
+  <div class="type-subtitle" id="typeSubtitle">物流师型</div>
+  
+  <div class="radar-container" id="radarChart"></div>
+  
+  <div class="traits" id="traits">
+    <div class="trait-tag">务实可靠</div>
+    <div class="trait-tag">严谨有条</div>
+    <div class="trait-tag">逻辑清晰</div>
+    <div class="trait-tag">执行力强</div>
+  </div>
+  
+  <div class="dimensions">
+    <div class="dim-item">
+      <div class="dim-label">E / I</div>
+      <div class="dim-value" id="eiValue">+10.0</div>
+      <div class="dim-strength" id="eiStrength">极端内向</div>
+    </div>
+    <div class="dim-item">
+      <div class="dim-label">S / N</div>
+      <div class="dim-value" id="snValue">+10.0</div>
+      <div class="dim-strength" id="snStrength">极端实感</div>
+    </div>
+    <div class="dim-item">
+      <div class="dim-label">T / F</div>
+      <div class="dim-value" id="tfValue">+10.0</div>
+      <div class="dim-strength" id="tfStrength">极端理性</div>
+    </div>
+    <div class="dim-item">
+      <div class="dim-label">J / P</div>
+      <div class="dim-value" id="jpValue">-10.0</div>
+      <div class="dim-strength" id="jpStrength">极端计划</div>
+    </div>
+  </div>
+  
+  <div class="footer">shiyiagi-ai-mbti · 60题专业版 · v1.0.0</div>
+</div>
+
+<button class="save-btn" onclick="saveImage()">保存为图片</button>
+
+<script>
+// 初始化雷达图
+const chart = echarts.init(document.getElementById('radarChart'));
+chart.setOption({
+  radar: {
+    indicator: [
+      { name: '外向 E', max: 10 },
+      { name: '实感 S', max: 10 },
+      { name: '理性 T', max: 10 },
+      { name: '计划 J', max: 10 },
+      { name: '内向 I', max: 10 },
+      { name: '直觉 N', max: 10 },
+      { name: '感性 F', max: 10 },
+      { name: '灵活 P', max: 10 }
+    ],
+    radius: '70%',
+    splitArea: {
+      areaStyle: {
+        color: ['rgba(99, 102, 241, 0.05)', 'rgba(99, 102, 241, 0.1)']
+      }
+    },
+    axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
+    splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
+    axisName: { color: '#a5b4fc', fontSize: 12 }
+  },
+  series: [{
+    type: 'radar',
+    data: [{
+      value: [0, 10, 10, 10, 10, 0, 0, 0],
+      name: '人格倾向',
+      areaStyle: { color: 'rgba(139, 92, 246, 0.3)' },
+      lineStyle: { color: '#8b5cf6', width: 2 },
+      itemStyle: { color: '#8b5cf6' }
+    }]
+  }]
+});
+
+// 保存图片功能
+function saveImage() {
+  const card = document.getElementById('resultCard');
+  html2canvas(card, {
+    scale: 2,
+    backgroundColor: null,
+    useCORS: true
+  }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'mbti-result.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+}
+</script>
+
+</body>
+</html>
